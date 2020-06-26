@@ -6,6 +6,7 @@ Created on 10.02.2016
 import re
 import sys
 import time
+import calendar
 import traceback
 from pathlib import Path
 
@@ -56,7 +57,7 @@ class McgLogParser:
                     # search ERROR level
                     if lineItemList[6] == "ERROR":
                         lineTimestamp = time.strptime(lineItemList[5], "%Y-%m-%d/%H:%M:%S")
-                        timeInSecs = time.mktime(lineTimestamp)
+                        timeInSecs = int(calendar.timegm(lineTimestamp))
                         strTimeStamp = time.strftime("%d.%m.%Y %H:%M:%S", lineTimestamp)
                         hitLine = True
                         self.nextLine = self.mcgLogFile.readline()[:-1]

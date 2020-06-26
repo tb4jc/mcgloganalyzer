@@ -3,8 +3,10 @@ Created on 09.02.2016
 
 @author: tburri
 """
+import re
+import time
+import calendar
 from pathlib import Path
-import time, re
 
 
 class ComLogParser:
@@ -80,7 +82,7 @@ class ComLogParser:
                 strDate = lineSplit[0]
                 strTime = lineSplit[1]
                 lineTimestamp = time.strptime(strDate + " " + strTime, "%Y-%m-%d %H:%M:%S")
-                timeInSecs = time.mktime(lineTimestamp)
+                timeInSecs = int(calendar.timegm(lineTimestamp))
                 timeStamp = time.strftime("%d.%m.%Y %H:%M:%S", lineTimestamp)
 
             nextLine = self.comLogFile.readline()[:-1]

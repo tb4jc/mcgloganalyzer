@@ -3,7 +3,10 @@ Created on 09.02.2016
 
 @author: tburri
 """
-import sys, time, traceback
+import sys
+import time
+import calendar
+import traceback
 from pathlib import Path
 
 
@@ -41,7 +44,7 @@ class StatLogParser:
         if not nextLine == "":
             try:
                 lineTimestamp = time.strptime(lineSplit[0], "%d.%m.%Y %H:%M:%S")
-                timeInSecs = time.mktime(lineTimestamp)
+                timeInSecs = int(calendar.timegm(lineTimestamp))
                 timeStamp = lineSplit[0]
                 linePart = nextLine.partition(';')
                 nextLine = linePart[2]

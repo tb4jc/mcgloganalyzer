@@ -6,6 +6,7 @@ Created on 29.05.2020
 import re
 import sys
 import time
+import calendar
 import traceback
 from pathlib import Path
 
@@ -55,7 +56,7 @@ class BtclLogParser:
                     # skip DEBUG messages
                     if lineItemList[5] in ['FATAL', 'ERROR', 'WARN', 'INFO']:
                         lineTimestamp = time.strptime(lineItemList[1], "%m-%d-%y %H:%M:%S")
-                        timeInSecs = time.mktime(lineTimestamp)
+                        timeInSecs = int(calendar.timegm(lineTimestamp))
                         strTimeStamp = time.strftime("%d.%m.%Y %H:%M:%S", lineTimestamp)
                         hitLine = True
 

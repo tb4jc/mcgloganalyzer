@@ -9,6 +9,7 @@ import shutil
 import sys
 import tarfile
 import time
+import calendar
 import traceback
 from pathlib import Path
 
@@ -60,7 +61,7 @@ class ComLogCombiner:
                                     strDate = lineSplit[0]
                                     strTime = lineSplit[1]
                                     lineTimestamp = time.strptime(strDate + " " + strTime, "%Y-%m-%d %H:%M:%S")
-                                    timeInSecs = time.mktime(lineTimestamp)
+                                    timeInSecs = int(calendar.timegm(lineTimestamp))
                                     if timeInSecs <= lastFirstTimeStamp:
                                         break
                                     else:

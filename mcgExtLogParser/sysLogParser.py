@@ -3,8 +3,12 @@ Created on 10.02.2016
 
 @author: tburri
 """
+import re
+import sys
+import time
+import calendar
+import traceback
 from pathlib import Path
-import sys, time, re, traceback
 
 
 class SysLogParser:
@@ -97,7 +101,7 @@ class SysLogParser:
                 if hitLine:
                     strTimeStamp = nextLine[:15]
                     lineTimestamp = time.strptime(time.strftime("%Y ") + strTimeStamp, "%Y %b %d %H:%M:%S")
-                    timeInSecs = time.mktime(lineTimestamp)
+                    timeInSecs = int(calendar.timegm(lineTimestamp))
                     timeStamp = time.strftime("%d.%m.%Y %H:%M:%S", lineTimestamp)
                     if resultType == SysLogParser.GSM_ENGINE_UP:
                         self.uLastGsmUpTime = timeInSecs
