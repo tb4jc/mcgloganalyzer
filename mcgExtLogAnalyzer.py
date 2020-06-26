@@ -14,7 +14,7 @@ import traceback
 from datetime import datetime
 from pathlib import Path
 from tkinter import filedialog
-from tkinter import Frame
+from tkinter import Frame, LEFT, RIGHT, Y, TOP, END
 from tkinter import Text
 from tkinter import Scrollbar
 
@@ -23,8 +23,7 @@ from mcgExtLogWriter import *
 from mcgExtLogParser import *
 
 cmdLineRun = True
-isTarFile = False
-issueArchiveDir = ""
+cIssueArchiveDir = ""
 workingDir = ""
 scrollTxt = None
 startTime = time.process_time()
@@ -34,6 +33,7 @@ class scrollTxtArea:
     def __init__(self, root):
         frame = Frame(root)
         frame.pack()
+        self.text = None
         self.textPad(frame)
         return
 
@@ -87,10 +87,11 @@ def handleFileOrDir(issueArchiveDirPath):
     # if tar file -> first extract it ...
     if isTarFile:
         printTxt("Unpacking and evaluating MCG Issue Archive '%s' ..." % issueArchiveDirPath, e='', f=True)
-        filebase = issueArchiveDirPath.stem[:-4]  # removes .tar from file basename (file name without extension)
-        str_timestamp = timestampConverter(filebase.split('_')[-1])
+        fileBase = issueArchiveDirPath.stem[:-4]  # removes .tar from file basename (file name without extension)
+        mcgFQDN = fileBase.split('_')[1]
+        str_timestamp = timestampConverter(fileBase.split('_')[-1])
         workingDirPath = issueArchiveDirPath.parent
-        archiveDirPath = workingDirPath / (filebase + '_' + str_timestamp)
+        archiveDirPath = workingDirPath / (fileBase + '_' + str_timestamp)
         if archiveDirPath.exists():
             shutil.rmtree(str(archiveDirPath), onerror=del_rw)
         archiveDirPath.mkdir(parents=True)
@@ -101,9 +102,9 @@ def handleFileOrDir(issueArchiveDirPath):
         issueArchiveDir = str(archiveDirPath)
     else:
         printTxt("Evaluating MCG Issue Archive Directory '%s' ..." % issueArchiveDirPath, e='', f=True)
+        mcgFQDN = issueArchiveDirPath.parts[-1].split('_')[1]
         issueArchiveDir = str(issueArchiveDirPath)
 
-    mcgFQDN = issueArchiveDir.split('_')[1]
     fqdnLabels = mcgFQDN.split('.')
     deviceLabel = fqdnLabels[0]
     carLabel = fqdnLabels[1]
@@ -129,15 +130,15 @@ def handleFileOrDir(issueArchiveDirPath):
         combinedCsvLogFile.write(newHeader)
         excelWriter.addHeaders(newHeader.split(';'))
 
-        comLogParser = ComLogParser(str(Path(issueArchiveDir) / COM_LOG_ALL_FILENAME))
-        sysLogParser = SysLogParser(str(Path(issueArchiveDir) / SYS_LOG_ALL_FILENAME))
+        comLogParserInst = ComLogParser(str(Path(issueArchiveDir) / COM_LOG_ALL_FILENAME))
+        sysLogParserInst = SysLogParser(str(Path(issueArchiveDir) / SYS_LOG_ALL_FILENAME))
         mcgLogParser = McgLogParser(str(Path(issueArchiveDir) / MCG_LOG_ALL_FILENAME))
-        btclLogParser = BtclLogParser(str(Path(issueArchiveDir) / BTCL_LOG_ALL_FILENAME))
+        btclLogParserInst = BtclLogParser(str(Path(issueArchiveDir) / BTCL_LOG_ALL_FILENAME))
 
         if combiner.getArchiveType() == ARCHIVE_TYPE_EXTENDED:
             statLogFile = str(Path(issueArchiveDir) / STAT_LOG_ALL_FILENAME)
-            statLogParser = StatLogParser(statLogFile, type)
-            if comLogParser.isOk() and statLogParser.isOk() and sysLogParser.isOk() and btclLogParser.isOk():
+            statLogParserInst = StatLogParser(statLogFile, type)
+            if comLogParserInst.isOk() and statLogParserInst.isOk() and sysLogParserInst.isOk() and btclLogParserInst.isOk():
                 rssiResultMapPath = Path(issueArchiveDir) / (fileNamePrefix + "_rssiResultMap.csv")
                 rssiResultMapFile = rssiResultMapPath.open(mode='w', newline='')
                 rssiResultMapCsv = csv.DictWriter(rssiResultMapFile, delimiter=";", fieldnames=["rssi", "FTP Result"])
@@ -149,19 +150,19 @@ def handleFileOrDir(issueArchiveDirPath):
                 statisticsTotal = 0
                 statisticsSuccess = 0
                 lastGsmUp = 0
-                statusLogLine = statLogParser.getNextLine()
-                comLogLine = comLogParser.getNextLine()
+                statusLogLine = statLogParserInst.getNextLine()
+                comLogLine = comLogParserInst.getNextLine()
                 lastFtpOkTimestamp = None
-                sysLogLine = sysLogParser.getNextLine()
-                btclLogLine = btclLogParser.getNextLine()
+                sysLogLine = sysLogParserInst.getNextLine()
+                btclLogLine = btclLogParserInst.getNextLine()
                 try:
                     # skip all till first statusLogLine
                     while comLogLine[0] < statusLogLine[0]:
-                        comLogLine = comLogParser.getNextLine()
+                        comLogLine = comLogParserInst.getNextLine()
                     while sysLogLine[0] < statusLogLine[0]:
-                        sysLogLine = sysLogParser.getNextLine()
+                        sysLogLine = sysLogParserInst.getNextLine()
                     while btclLogLine[0] < statusLogLine[0]:
-                        btclLogLine = btclLogParser.getNextLine()
+                        btclLogLine = btclLogParserInst.getNextLine()
 
                     lastStatusLogLine = statusLogLine
                     # loop over status all log file
@@ -172,7 +173,7 @@ def handleFileOrDir(issueArchiveDirPath):
                                 combinedCsvLogFile.write(newLine)
                                 excelWriter.addRow(newLine.split(';')[:-1])
                             lastStatusLogLine = statusLogLine
-                            statusLogLine = statLogParser.getNextLine()
+                            statusLogLine = statLogParserInst.getNextLine()
 
                         elif (comLogLine[0] <= statusLogLine[0]) and (comLogLine[0] <= sysLogLine[0]) and (comLogLine[0] <= btclLogLine[0]):
                             # check which statusLogLine is nearer and use this values
@@ -200,7 +201,7 @@ def handleFileOrDir(issueArchiveDirPath):
                             combinedCsvLogFile.write(newLine)
                             excelWriter.addRow(newLine.split(';'))
                             # fetch next comLog FTP result
-                            comLogLine = comLogParser.getNextLine()
+                            comLogLine = comLogParserInst.getNextLine()
                         elif (sysLogLine[0] <= statusLogLine[0]) and (sysLogLine[0] <= comLogLine[0]) and (sysLogLine[0] <= btclLogLine[0]):
                             # check which statusLogLine is nearer and use this values
                             diff1 = statusLogLine[0] - sysLogLine[0]
@@ -211,7 +212,7 @@ def handleFileOrDir(issueArchiveDirPath):
                                 statusLine = lastStatusLogLine[2]
 
                             strTimeToFailColumn = sysLogLine[4]
-                            if sysLogLine[2] == sysLogParser.GSM_RESET and lastFtpOkTimestamp is not None:
+                            if sysLogLine[2] == sysLogParserInst.GSM_RESET and lastFtpOkTimestamp is not None:
                                 sDiff = sysLogLine[0] - lastFtpOkTimestamp[0]
                                 strDiffTimestamp = time.strftime("%H:%M:%S", time.gmtime(sDiff))
                                 strTimeToFailColumn = strTimeToFailColumn + ";" + strDiffTimestamp
@@ -223,7 +224,7 @@ def handleFileOrDir(issueArchiveDirPath):
                                 comDropKmlWriter.addPlacemarkPpp(newLine, sysLogLine[2], sysLogLine[3])
 
                             # fetch next sysLog result
-                            sysLogLine = sysLogParser.getNextLine()
+                            sysLogLine = sysLogParserInst.getNextLine()
                         elif (btclLogLine[0] <= statusLogLine[0]) and (btclLogLine[0] <= comLogLine[0]) and (btclLogLine[0] <= sysLogLine[0]):
                             # check which statusLogLine is nearer and use this values
                             diff1 = statusLogLine[0] - btclLogLine[0]
@@ -238,7 +239,7 @@ def handleFileOrDir(issueArchiveDirPath):
                             excelWriter.addRow(newLine.split(';'))
 
                             # fetch next sysLog result
-                            btclLogLine = btclLogParser.getNextLine()
+                            btclLogLine = btclLogParserInst.getNextLine()
                         else:
                             raise BaseException("Failure during parsing merged log files!")
 
@@ -255,21 +256,21 @@ def handleFileOrDir(issueArchiveDirPath):
             else:
                 print("Not all parser are not ok!")
         else:
-            if comLogParser.isOk() and mcgLogParser.isOk() and sysLogParser.isOk() and btclLogParser.isOk():
+            if comLogParserInst.isOk() and mcgLogParser.isOk() and sysLogParserInst.isOk() and btclLogParserInst.isOk():
                 writtenLines = 0
                 statisticsTotal = 0
                 statisticsSuccess = 0
-                comLogLine = comLogParser.getNextLine()
+                comLogLine = comLogParserInst.getNextLine()
                 mcgLogLine = mcgLogParser.getNextLine()
-                sysLogLine = sysLogParser.getNextLine()
-                btclLogLine = btclLogParser.getNextLine()
+                sysLogLine = sysLogParserInst.getNextLine()
+                btclLogLine = btclLogParserInst.getNextLine()
                 lastFtpOkTimestamp = None
                 try:
                     # iterate over files as long as any parser returns valid timestamp
                     while (sysLogLine[0] < 0xFFFFFFFF) or (comLogLine[0] < 0xFFFFFFFF) or (mcgLogLine[0] < 0xFFFFFFFF) or (btclLogLine[0] < 0xFFFFFFFF):
                         if (sysLogLine[0] <= comLogLine[0]) and (sysLogLine[0] <= mcgLogLine[0]) and (sysLogLine[0] <= btclLogLine[0]):
                             strTimeToFailColumn = sysLogLine[4]
-                            if sysLogLine[2] == sysLogParser.GSM_RESET and lastFtpOkTimestamp is not None:
+                            if sysLogLine[2] == sysLogParserInst.GSM_RESET and lastFtpOkTimestamp is not None:
                                 sDiff = sysLogLine[0] - lastFtpOkTimestamp[0]
                                 strDiffTimestamp = time.strftime("%H:%M:%S", time.gmtime(sDiff))
                                 strTimeToFailColumn = strTimeToFailColumn + ";" + strDiffTimestamp
@@ -277,7 +278,7 @@ def handleFileOrDir(issueArchiveDirPath):
                             combinedCsvLogFile.write(newLine)
                             excelWriter.addRow(newLine.split(';'))
                             # fetch next sysLog result
-                            sysLogLine = sysLogParser.getNextLine()
+                            sysLogLine = sysLogParserInst.getNextLine()
 
                         elif (comLogLine[0] <= sysLogLine[0]) and (comLogLine[0] <= mcgLogLine[0]) and (comLogLine[0] <= btclLogLine[0]):
                             if comLogLine[3]:
@@ -292,7 +293,7 @@ def handleFileOrDir(issueArchiveDirPath):
                             combinedCsvLogFile.write(newLine)
                             excelWriter.addRow(newLine.split(';'))
                             # fetch next comLog FTP result
-                            comLogLine = comLogParser.getNextLine()
+                            comLogLine = comLogParserInst.getNextLine()
 
                         elif (mcgLogLine[0] <= sysLogLine[0]) and (mcgLogLine[0] <= comLogLine[0]) and (mcgLogLine[0] <= btclLogLine[0]):
                             newLine = "%s;%s;%s\n" % (mcgLogLine[1], mcgLogLine[2], "")
@@ -330,15 +331,15 @@ def handleFileOrDir(issueArchiveDirPath):
         printTxt("Statistics:")
         statisticsFile.write("Statistics:\n")
         printTxt("total FTP results = %d" % (statisticsTotal))
-        statisticsFile.write("total FTP results = %d\n" % (statisticsTotal))
+        statisticsFile.write("total FTP results = %d\n" % statisticsTotal)
         printTxt("total FTP success = %d" % (statisticsSuccess))
-        statisticsFile.write("total FTP success = %d\n" % (statisticsSuccess))
+        statisticsFile.write("total FTP success = %d\n" % statisticsSuccess)
         if not statisticsTotal == 0:
             okTotalRatio = statisticsSuccess / statisticsTotal * 100
         else:
             okTotalRatio = 0.0
-        printTxt("ratio %0.4f%%" % (okTotalRatio))
-        statisticsFile.write("Ok/Total-Ratio = %0.4f%%\n" % (okTotalRatio))
+        printTxt("ratio %0.4f%%" % okTotalRatio)
+        statisticsFile.write("Ok/Total-Ratio = %0.4f%%\n" % okTotalRatio)
         statisticsFile.close()
     except BaseException:
         print(sys.exc_info())
@@ -362,24 +363,23 @@ if __name__ == '__main__':
             parser.print_help()
             sys.exit()
         else:
-            issueArchiveDirPath = Path(workingDirectory)
-            handleFileOrDir(issueArchiveDirPath)
+            cIssueArchiveDirPath = Path(workingDirectory)
+            handleFileOrDir(cIssueArchiveDirPath)
 
     elif not args.fileOrDir == "none":
         cmdLineRun = True
-        issueArchiveDirPath = Path(args.fileOrDir)
-        if not issueArchiveDirPath.exists():
-            printTxt("MCG Issue Archive file/dir '%s' doesn't exists!" % (args.fileOrDir))
+        cIssueArchiveDirPath = Path(args.fileOrDir)
+        if not cIssueArchiveDirPath.exists():
+            printTxt("MCG Issue Archive file/dir '%s' doesn't exists!" % args.fileOrDir)
             sys.exit()
-        handleFileOrDir(issueArchiveDirPath)
+        handleFileOrDir(cIssueArchiveDirPath)
     else:
         rootFrame = tk.Tk()
         rootFrame.withdraw()
-        issueArchiveDir = filedialog.askopenfilename(initialdir="C:/",
-                                                     filetypes=(("MCG Issue Archives", "*.gz"), ("All Files", "*.*")),
-                                                     title="Choose a file.")
-        if not issueArchiveDir == "":
-            isTarFile = True
-            handleFileOrDir(Path(issueArchiveDir))
+        cIssueArchiveDir = filedialog.askopenfilename(initialdir="C:/",
+                                                      filetypes=(("MCG Issue Archives", "*.gz"), ("All Files", "*.*")),
+                                                      title="Choose a file.")
+        if not cIssueArchiveDir == "":
+            handleFileOrDir(Path(cIssueArchiveDir))
         else:
             print("No file selected.")
