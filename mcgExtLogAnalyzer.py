@@ -75,9 +75,13 @@ def del_rw(action, name, exc):
         traceback.print_tb(exc_traceback)
 
 
-def timestampConverter(timestamp):
-    d = datetime.utcfromtimestamp(int(timestamp))
-    return d.strftime("%Y-%m-%d_%H.%M.%S")
+def timestampConverter(time_string, string_type='timestamp'):
+    if string_type == 'timestamp':
+        d = datetime.utcfromtimestamp(int(time_string))
+        return d.strftime("%Y-%m-%d_%H.%M.%S")
+    elif string_type == 'date-hour':
+        d = datetime.strptime(time_string + "+0000", "%Y-%m-%d %H.%M.%S%z")
+        return int(d.timestamp())
 
 
 def handleFileOrDir(issueArchiveDirPath):
@@ -88,10 +92,23 @@ def handleFileOrDir(issueArchiveDirPath):
     if isTarFile:
         printTxt("Unpacking and evaluating MCG Issue Archive '%s' ..." % issueArchiveDirPath, e='', f=True)
         fileBase = issueArchiveDirPath.stem[:-4]  # removes .tar from file basename (file name without extension)
-        mcgFQDN = fileBase.split('_')[1]
-        str_timestamp = timestampConverter(fileBase.split('_')[-1])
+        fileBase_parts = fileBase.split('_')
+        len_fileBase_parts = len(fileBase_parts)
+        # check if it is an issue archive from automated test bench - starts with test case prefix
+        if fileBase.startswith("TC-", 0, 3):
+            mcgFQDN = '_'.join(fileBase_parts[3:4])
+            len_fileBase_parts -= 2
+        else:
+            mcgFQDN = '_'.join(fileBase_parts[1:-1])
+
         workingDirPath = issueArchiveDirPath.parent
-        archiveDirPath = workingDirPath / (fileBase + '_' + str_timestamp)
+        if len_fileBase_parts == 3:
+            str_timestamp = timestampConverter(fileBase_parts[-1])
+            archiveDirPath = workingDirPath / (fileBase + '_' + str_timestamp)
+        elif len_fileBase_parts == 4:
+            str_timestamp = timestampConverter(' '.join(fileBase_parts[-2:]), "date-hour")
+            archiveDirPath = workingDirPath / ('_'.join(fileBase_parts[0:-3]) + "_" + str(str_timestamp) + "_" + '_'.join(fileBase_parts[-2:]))
+
         if archiveDirPath.exists():
             shutil.rmtree(str(archiveDirPath), onerror=del_rw)
         archiveDirPath.mkdir(parents=True)
@@ -102,7 +119,8 @@ def handleFileOrDir(issueArchiveDirPath):
         issueArchiveDir = str(archiveDirPath)
     else:
         printTxt("Evaluating MCG Issue Archive Directory '%s' ..." % issueArchiveDirPath, e='', f=True)
-        mcgFQDN = issueArchiveDirPath.parts[-1].split('_')[1]
+        filename_parts = issueArchiveDirPath.parts[-1].split('_')
+        mcgFQDN = '_'.join(filename_parts[1:-3])
         issueArchiveDir = str(issueArchiveDirPath)
 
     fqdnLabels = mcgFQDN.split('.')
@@ -346,19 +364,17 @@ def handleFileOrDir(issueArchiveDirPath):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description='Analyze a selected MCG Issue archive with or without MGC Extended Logging')
-    parser.add_argument('-s', '--skip-combine', action='store_true',
-                        help='If parameter is given, the program expects a MCG Issue Archive as input with already '
-                             'combined log files')
+    parser = argparse.ArgumentParser(description='Analyze a selected MCG Issue archive file or directory - with or without MGC Extended Logging')
+    parser.add_argument('-s', '--skip-combine',
+                        action='store_true',
+                        help='If parameter is given, the program expects a MCG Issue Archive as input with already combined log files')
     parser.add_argument('fileOrDir', metavar='file/dir', nargs='?', default='none', help='archive or directory')
 
     args = parser.parse_args()
     if args.fileOrDir == "none":
         rootFrame = tk.Tk()
         rootFrame.withdraw()
-        workingDirectory = filedialog.askdirectory(initialdir="C:/workspace/TWCS/___issues",
-                                                   title="Choose a Issue Archive Directory.")
+        workingDirectory = filedialog.askdirectory(initialdir="C:/workspace/TWCS/___issues", title="Choose a Issue Archive Directory.")
         if workingDirectory == "":
             parser.print_help()
             sys.exit()
