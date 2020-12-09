@@ -107,7 +107,7 @@ def handleFileOrDir(issueArchiveDirPath):
             archiveDirPath = workingDirPath / (fileBase + '_' + str_timestamp)
         elif len_fileBase_parts == 4:
             str_timestamp = timestampConverter(' '.join(fileBase_parts[-2:]), "date-hour")
-            archiveDirPath = workingDirPath / ('_'.join(fileBase_parts[0:-3]) + "_" + str(str_timestamp) + "_" + '_'.join(fileBase_parts[-2:]))
+            archiveDirPath = workingDirPath / ('_'.join(fileBase_parts[0:-2]) + "_" + str(str_timestamp) + "_" + '_'.join(fileBase_parts[-2:]))
 
         if archiveDirPath.exists():
             shutil.rmtree(str(archiveDirPath), onerror=del_rw)
