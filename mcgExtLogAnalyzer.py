@@ -93,19 +93,23 @@ def handleFileOrDir(issueArchiveDirPath):
         printTxt("Unpacking and evaluating MCG Issue Archive '%s' ..." % issueArchiveDirPath, e='', f=True)
         fileBase = issueArchiveDirPath.stem[:-4]  # removes .tar from file basename (file name without extension)
         fileBase_parts = fileBase.split('_')
+
+        # check if old issue archive name format with timestamp only
+        old_file_format = fileBase_parts[-1].isdigit()
         len_fileBase_parts = len(fileBase_parts)
+        fqdn_last_idx = len_fileBase_parts - 1 if old_file_format else len_fileBase_parts - 2
+
         # check if it is an issue archive from automated test bench - starts with test case prefix
         if fileBase.startswith("TC-", 0, 3):
-            mcgFQDN = '_'.join(fileBase_parts[3:4])
-            len_fileBase_parts -= 2
+            mcgFQDN = '_'.join(fileBase_parts[3:fqdn_last_idx])
         else:
-            mcgFQDN = '_'.join(fileBase_parts[1:-1])
+            mcgFQDN = '_'.join(fileBase_parts[1:fqdn_last_idx])
 
         workingDirPath = issueArchiveDirPath.parent
-        if len_fileBase_parts == 3:
+        if old_file_format:
             str_timestamp = timestampConverter(fileBase_parts[-1])
             archiveDirPath = workingDirPath / (fileBase + '_' + str_timestamp)
-        elif len_fileBase_parts == 4:
+        else:
             str_timestamp = timestampConverter(' '.join(fileBase_parts[-2:]), "date-hour")
             archiveDirPath = workingDirPath / ('_'.join(fileBase_parts[0:-2]) + "_" + str(str_timestamp) + "_" + '_'.join(fileBase_parts[-2:]))
 
@@ -113,8 +117,7 @@ def handleFileOrDir(issueArchiveDirPath):
             shutil.rmtree(str(archiveDirPath), onerror=del_rw)
         archiveDirPath.mkdir(parents=True)
         tar = tarfile.open(str(issueArchiveDirPath), 'r')
-        for item in tar:
-            tar.extract(item, str(archiveDirPath))
+        tar.extractall(str(archiveDirPath))
         printTxt("done.", f=True)
         issueArchiveDir = str(archiveDirPath)
     else:
