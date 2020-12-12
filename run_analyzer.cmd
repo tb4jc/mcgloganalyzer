@@ -11,5 +11,5 @@ if not exist %CWD%set_python_path.cmd (
 
 call %CWD%set_python_path.cmd
 
-%PYTHON_PATH%\python.exe %CWD%mcgExtLogAnalyzer.py %1
+%PYTHON_PATH%\python.exe %CWD%mcgLogAnalyzer.py %1
 timeout 5
