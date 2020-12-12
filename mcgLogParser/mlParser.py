@@ -88,7 +88,7 @@ if __name__ == '__main__':
     import os
     import tkinter as tk
     from tkinter import filedialog
-    from mcgExtLogCombiner.mcgExtLogGlobalVariables import MCG_LOG_ALL_FILENAME
+    from mcgLogCombiner.mcgLogGlobalVariables import MCG_LOG_ALL_FILENAME
 
     root = tk.Tk()
     root.withdraw()

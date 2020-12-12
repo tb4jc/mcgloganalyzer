@@ -9,5 +9,5 @@ for entry in os.listdir(cwd):
         if entryAbsPath not in sys.path:
             sys.path.append(entryAbsPath)
 
-from mcgExtLogWriter.mcgExtLogExcelWriter import ExcelWriter
-from mcgExtLogWriter.mcgExtLogKmlWriter import KmlWriter
+from mcgLogWriter.mcgLogExcelWriter import ExcelWriter
+from mcgLogWriter.mcgLogKmlWriter import KmlWriter

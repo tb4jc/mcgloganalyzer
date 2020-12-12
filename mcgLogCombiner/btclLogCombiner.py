@@ -12,7 +12,7 @@ import time
 import traceback
 from pathlib import Path
 
-from mcgExtLogCombiner.mcgExtLogGlobalVariables import BTCL_LOG_ALL_FILENAME, MCG_LOG_DIR
+from mcgLogCombiner.mcgLogGlobalVariables import BTCL_LOG_ALL_FILENAME, MCG_LOG_DIR
 
 
 class BtclLogCombiner:

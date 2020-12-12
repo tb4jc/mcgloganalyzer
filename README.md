@@ -1,10 +1,17 @@
-MCG Platform - Extender Logger Analzyer
+# McgLogAnalyzer
 
-Analyzer for merge some of the available logs into single one based on timestamps.
+Analyzer of log files retrieved from MCG by MCG Issue Archive download.
 
-Log files merged:
-- system log files (syslog)
-- communication log files (file transfer)
-- mcg application log files
-- btcl client log files
-- ext: system info log files with Wifi, LTE / UMTS / GSM / GPS information
+It can unpack a given MCG Issue Archive or work on an existing direcory.
+During the evalation, it detects if the issue archive contains normal set of log files or one with files created by the MCG Extended Logger script.
+
+The tool merges multiple log files as:
+- syslog              /tmp/messages*
+- MCG Application Log /usr/local/data/log/mcgLogger.log*
+- Communication Log   /usr/local/data/log/comLogger.log*
+- BTCL Client Log     /usr/local/data/log/btclClient.log*
+
+Additional it creates two files as a merger of all above logs:
+- Text File as CSV
+- Excel File with additional coloring and possibility for filtering
+

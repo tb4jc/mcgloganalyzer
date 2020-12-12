@@ -8,7 +8,7 @@ import shutil
 import tarfile
 import sys, traceback
 
-from mcgExtLogGlobalVariables import SYS_INFO_ALL_FILENAME
+from mcgLogGlobalVariables import SYS_INFO_ALL_FILENAME
 
 class SysInfoCombiner():
     '''
@@ -25,12 +25,12 @@ class SysInfoCombiner():
                 if sysInfoAllPath.exists():
                     sysInfoAllPath.unlink()
                 sysInfoAllFile = sysInfoAllPath.open(mode='a', newline='')
-                mcgExtLogPath = issueArchivePath / "usr" / "local" / "data" / "log" / "mcg_ext_log"
+                mcgLogPath = issueArchivePath / "usr" / "local" / "data" / "log" / "mcg_ext_log"
                 unpackPath = issueArchivePath / "unpackTmp"
                 if unpackPath.exists():
                     shutil.rmtree(str(unpackPath), True)
                 unpackPath.mkdir()
-                fileList = sorted(mcgExtLogPath.glob("sysinfo*.tar.gz"), key=str, reverse=False)
+                fileList = sorted(mcgLogPath.glob("sysinfo*.tar.gz"), key=str, reverse=False)
                 for file in fileList:
                     print("sysInfo file %s" % (str(file)))
                     tar = tarfile.open(str(file), 'r')

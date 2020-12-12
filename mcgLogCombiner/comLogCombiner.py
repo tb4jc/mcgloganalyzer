@@ -13,7 +13,7 @@ import calendar
 import traceback
 from pathlib import Path
 
-from mcgExtLogCombiner.mcgExtLogGlobalVariables import ARCHIVE_TYPE_EXTENDED, ARCHIVE_TYPE_NORMAL, \
+from mcgLogCombiner.mcgLogGlobalVariables import ARCHIVE_TYPE_EXTENDED, ARCHIVE_TYPE_NORMAL, \
     COM_LOG_ALL_FILENAME, MCG_LOG_DIR, EXT_ARCHIVE_TYPE_FILENAME, NORMAL_ARCHIVE_TYPE_FILENAME
 
 
@@ -40,12 +40,12 @@ class ComLogCombiner:
                     archiveTypeFile = Path(issueArchivePath / EXT_ARCHIVE_TYPE_FILENAME).open(mode='w', newline='')
                     archiveTypeFile.write("extended archive file")
                     archiveTypeFile.close()
-                    mcgExtLogPath = logDirPath / "mcg_ext_log"
+                    mcgLogPath = logDirPath / "mcg_ext_log"
                     unpackPath = issueArchivePath / "unpackTmp"
                     if unpackPath.exists():
                         shutil.rmtree(str(unpackPath), True)
                     unpackPath.mkdir()
-                    fileList = sorted(mcgExtLogPath.glob("comLog*.tar.gz"), key=str, reverse=False)
+                    fileList = sorted(mcgLogPath.glob("comLog*.tar.gz"), key=str, reverse=False)
                     lastFirstTimeStamp = 0
                     for file in fileList:
                         curFileSize = os.stat(str(file)).st_size

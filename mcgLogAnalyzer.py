@@ -18,9 +18,9 @@ from tkinter import Frame, LEFT, RIGHT, Y, TOP, END
 from tkinter import Text
 from tkinter import Scrollbar
 
-from mcgExtLogCombiner import *
-from mcgExtLogWriter import *
-from mcgExtLogParser import *
+from mcgLogCombiner import *
+from mcgLogWriter import *
+from mcgLogParser import *
 
 cmdLineRun = True
 cIssueArchiveDir = ""

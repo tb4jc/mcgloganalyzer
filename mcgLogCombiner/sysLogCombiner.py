@@ -8,7 +8,7 @@ import shutil
 import tarfile
 import os, sys, traceback
 
-from mcgExtLogGlobalVariables import SYS_LOG_ALL_FILENAME,ARCHIVE_TYPE_EXTENDED,ARCHIVE_TYPE_NORMAL
+from mcgLogGlobalVariables import SYS_LOG_ALL_FILENAME,ARCHIVE_TYPE_EXTENDED,ARCHIVE_TYPE_NORMAL
 
 class SysLogCombiner():
     '''
@@ -27,7 +27,7 @@ class SysLogCombiner():
                 sysLogAllFile = sysLogAllPath.open(mode='a', newline='')
                 tmpFilePath= issueArchivePath / "tmp/messages"
                 mcgLogPath = issueArchivePath / "usr" / "local" / "data" / "log"
-                mcgExtLogPath = mcgLogPath/ "mcg_ext_log"
+                mcgLogPath = mcgLogPath/ "mcg_ext_log"
                 if archiveType == ARCHIVE_TYPE_EXTENDED:
                     unpackPath = issueArchivePath / "unpackTmp"
                     if unpackPath.exists():
@@ -35,7 +35,7 @@ class SysLogCombiner():
                     unpackPath.mkdir()
                     lastLogSize = 10240000
                     lastFilePathStr = ""
-                    fileList = sorted(mcgExtLogPath.glob("syslog*.tar.gz"), key=str, reverse=False)
+                    fileList = sorted(mcgLogPath.glob("syslog*.tar.gz"), key=str, reverse=False)
                     for file in fileList:
                         filePath = str(file)
                         tar = tarfile.open(filePath, 'r')
@@ -107,8 +107,8 @@ class SysLogCombiner():
         
                 # if current syslog file exists in /tmp -> take it to merge
                 # else use syslog_last.tar.gz from extended logger if it exists
-                tmpFilePath= issueArchivePath / "tmp/messages"
-                lastFilePath = mcgExtLogPath / "syslog_last.tar.gz"                
+                tmpFilePath = issueArchivePath / "tmp/messages"
+                lastFilePath = mcgLogPath / "syslog_last.tar.gz"
                 if tmpFilePath.exists():
                     print("syslog file %s" % (str(tmpFilePath)))
                     with tmpFilePath.open(mode='r') as infile:

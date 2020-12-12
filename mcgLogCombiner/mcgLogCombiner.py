@@ -25,8 +25,8 @@ class McgLogCombiner:
                 if mcgLogAllPath.exists():
                     mcgLogAllPath.unlink()
                 mcgLogAllFile = mcgLogAllPath.open(mode='a', newline='')
-                mcgExtLogPath = issueArchivePath / "usr" / "local" / "data" / "log"
-                fileList = sorted(mcgExtLogPath.glob("mcgLogger.log*"), key=str, reverse=True)
+                mcgLogPath = issueArchivePath / "usr" / "local" / "data" / "log"
+                fileList = sorted(mcgLogPath.glob("mcgLogger.log*"), key=str, reverse=True)
                 for file in fileList:
                     print("mcgLog file %s" % (str(file)))
                     with file.open(mode='r') as infile:

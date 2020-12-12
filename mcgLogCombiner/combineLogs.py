@@ -5,13 +5,13 @@ Created on 09.02.2016
 """
 from pathlib import Path
 
-from mcgExtLogCombiner.mcgExtLogGlobalVariables import ARCHIVE_TYPE_EXTENDED, ARCHIVE_TYPE_NORMAL, MCG_EXT_LOG_DIR
-from mcgExtLogCombiner.comLogCombiner import ComLogCombiner
-from mcgExtLogCombiner.mcgLogCombiner import McgLogCombiner
-from mcgExtLogCombiner.btclLogCombiner import BtclLogCombiner
-from mcgExtLogCombiner.statusLogCombiner import StatusLogCombiner
-from mcgExtLogCombiner.sysInfoCombiner import SysInfoCombiner
-from mcgExtLogCombiner.sysLogCombiner import SysLogCombiner
+from mcgLogCombiner.mcgLogGlobalVariables import ARCHIVE_TYPE_EXTENDED, ARCHIVE_TYPE_NORMAL, MCG_EXT_LOG_DIR
+from mcgLogCombiner.comLogCombiner import ComLogCombiner
+from mcgLogCombiner.mcgLogCombiner import McgLogCombiner
+from mcgLogCombiner.btclLogCombiner import BtclLogCombiner
+from mcgLogCombiner.statusLogCombiner import StatusLogCombiner
+from mcgLogCombiner.sysInfoCombiner import SysInfoCombiner
+from mcgLogCombiner.sysLogCombiner import SysLogCombiner
 
 
 class CombineLogs(object):
@@ -26,8 +26,8 @@ class CombineLogs(object):
         self.issueArchiveDir = issueArchiveDir
 
         # check if extended logger issue archive
-        mcgExtLogPath = Path(issueArchiveDir) / MCG_EXT_LOG_DIR
-        if not mcgExtLogPath.exists():
+        mcgLogPath = Path(issueArchiveDir) / MCG_EXT_LOG_DIR
+        if not mcgLogPath.exists():
             self.archiveType = ARCHIVE_TYPE_NORMAL
             print("'%s' is a NORMAL MCG Issue Archvie ..." % (issueArchiveDir,))
         else:

@@ -8,7 +8,7 @@ import shutil
 import tarfile
 import sys, traceback
 
-from mcgExtLogGlobalVariables import STAT_LOG_ALL_FILENAME,ARCHIVE_TYPE_EXTENDED,ARCHIVE_TYPE_NORMAL
+from mcgLogGlobalVariables import STAT_LOG_ALL_FILENAME,ARCHIVE_TYPE_EXTENDED,ARCHIVE_TYPE_NORMAL
 
 
 class StatusLogCombiner():
@@ -37,12 +37,12 @@ class StatusLogCombiner():
                     if statusLogAllPath.exists():
                         statusLogAllPath.unlink()
                     statusLogAllFile = statusLogAllPath.open(mode='a', newline='')
-                    mcgExtLogPath = issueArchivePath / "usr" / "local" / "data" / "log" / "mcg_ext_log"
+                    mcgLogPath = issueArchivePath / "usr" / "local" / "data" / "log" / "mcg_ext_log"
                     unpackPath = issueArchivePath / "unpackTmp"
                     if unpackPath.exists():
                         shutil.rmtree(str(unpackPath), True)
                     unpackPath.mkdir()
-                    fileList = sorted(mcgExtLogPath.glob("status_*.tar.gz"), key=str, reverse=False)
+                    fileList = sorted(mcgLogPath.glob("status_*.tar.gz"), key=str, reverse=False)
                     firstFile = True
                     for file in fileList:
                         print("status %s file %s" % (self._type, str(file)))
