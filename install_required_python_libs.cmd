@@ -10,8 +10,9 @@ if not exist %CWD%set_python_path.cmd (
     exit /b
 )
 
-call %CWD%set_python_path.cmd
+call "%CWD%set_python_path.cmd"
 
+%PYTHON_PATH%\python.exe -m pip install pip --upgrade
 %PYTHON_PATH%\python.exe -m pip install -r requirements.txt
 
 timeout 5
